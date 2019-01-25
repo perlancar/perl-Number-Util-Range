@@ -34,10 +34,34 @@ $SPEC{'convert_number_sequence_to_range'} = {
     result_naked => 1,
     examples => [
         {
+            summary => 'basic, non-numbers ignored',
             args => {
                 array => [100, 2, 3, 4, 5, 101, 'foo'],
             },
             result => [100, "2..5", 101, 'foo'],
+        },
+        {
+            summary => 'option: separator',
+            args => {
+                array => [100, 2, 3, 4, 5, 101],
+                separator => '-',
+            },
+            result => [100, "2-5", 101],
+        },
+        {
+            summary => 'multiple ranges, negative number',
+            args => {
+                array => [100, 2, 3, 4, 5, 6, 101, 102, -5, -4, -3, -2, 103],
+            },
+            result => [100, "2..6", 101, 102, "-5..-2", 103],
+        },
+        {
+            summary => 'option: threshold',
+            args => {
+                array => [100, 2, 3, 4, 5, 101],
+                threshold => 5,
+            },
+            result => [100, 2, 3, 4, 5, 101],
         },
     ],
 };
