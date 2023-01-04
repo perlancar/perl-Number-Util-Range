@@ -33,6 +33,9 @@ $SPEC{'convert_number_sequence_to_range'} = {
             schema => 'str*',
             default => '..',
         },
+        ignore_duplicates => {
+            schema => 'true*',
+        },
     },
     result_naked => 1,
     examples => [
