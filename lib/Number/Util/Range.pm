@@ -1,13 +1,16 @@
 package Number::Util::Range;
 
-# DATE
-# VERSION
-
 use 5.010001;
 use strict;
 use warnings;
 
 use Exporter qw(import);
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
+
 our @EXPORT_OK = qw(convert_number_sequence_to_range);
 our %SPEC;
 
@@ -63,6 +66,14 @@ $SPEC{'convert_number_sequence_to_range'} = {
             },
             result => [100, 2, 3, 4, 5, 101],
         },
+        {
+            summary => 'option: ignore_duplicates',
+            args => {
+                array => [1, 2, 3, 4, 2, 9, 9, 9],
+                ignore_duplicates => 1,
+            },
+            result => ["1..4", 9],
+        },
     ],
 };
 sub convert_number_sequence_to_range {
@@ -71,6 +82,7 @@ sub convert_number_sequence_to_range {
     my $array = $args{array};
     my $threshold = $args{threshold} // 4;
     my $separator = $args{separator} // '..';
+    my $ignore_duplicates = $args{ignore_duplicates};
 
     my @res;
     my @buf; # to hold possible sequence
@@ -81,8 +93,12 @@ sub convert_number_sequence_to_range {
         @buf = ();
     };
 
+    my %seen;
     for my $i (0..$#{$array}) {
         my $el = $array->[$i];
+
+        next if $ignore_duplicates && $seen{$el}++;
+
         unless ($el =~ /\A-?[0-9]+\z/) { # not an integer
             $code_empty_buffer->();
             push @res, $el;
