@@ -1,3 +1,10 @@
+0.006   2023-09-08  Released-By: PERLANCAR; Urgency: low
+
+        - No functional changes.
+
+        - Edit Changes.
+
+
 0.005   2023-09-08  Released-By: PERLANCAR; Urgency: medium
 
         - Add support for old 'threshold' option name (but not document
