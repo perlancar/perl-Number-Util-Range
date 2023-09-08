@@ -121,7 +121,9 @@ sub convert_number_sequence_to_range {
     my %args = @_;
 
     my $array = $args{array};
-    my $min_range_len = $args{min_range_len} // 4;
+    my $min_range_len = $args{min_range_len}
+        // $args{threshold} # old name, DEPRECATED
+        // 4;
     my $max_range_len = $args{max_range_len};
     my $separator = $args{separator} // '..';
     my $ignore_duplicates = $args{ignore_duplicates};
