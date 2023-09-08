@@ -17,7 +17,14 @@ our %SPEC;
 $SPEC{'convert_number_sequence_to_range'} = {
     v => 1.1,
     summary => 'Find sequences in number arrays & convert to range '.
-        '(e.g. 100,2,3,4,5,101 -> 100,"2..5",101)',
+    '(e.g. 100,2,3,4,5,101 -> 100,"2..5",101)',
+    description => <<'MARKDOWN',
+
+This routine accepts an array, finds sequences of numbers in it (e.g. 1, 2, 3),
+and converts each sequence into a range ("1..3"). So basically it "compresses" the
+sequence (many elements) into a single element.
+
+MARKDOWN
     args => {
         array => {
             schema => ['array*', of=>'str*'],
@@ -25,9 +32,24 @@ $SPEC{'convert_number_sequence_to_range'} = {
             greedy => 1,
             cmdline_src => 'stdin_or_args',
         },
-        threshold => {
-            schema => 'posint*',
+        min_range_len => {
+            schema => ['posint*', min=>2],
             default => 4,
+            description => <<'MARKDOWN',
+
+Minimum number of items in a sequence to convert to a range. Sequence that has
+less than this number of items will not be converted.
+
+MARKDOWN
+        },
+        max_range_len => {
+            schema => ['posint*',min=>2],
+            description => <<'MARKDOWN',
+
+Maximum number of items in a sequence to convert to a range. Sequence that has
+more than this number of items might be split into two or more ranges.
+
+MARKDOWN
         },
         separator => {
             schema => 'str*',
@@ -35,10 +57,6 @@ $SPEC{'convert_number_sequence_to_range'} = {
         },
         ignore_duplicates => {
             schema => 'true*',
-        },
-        max_width => {
-            schema => 'posint*',
-            default => 0,
         },
     },
     result_naked => 1,
@@ -66,12 +84,20 @@ $SPEC{'convert_number_sequence_to_range'} = {
             result => [100, "2..6", 101, 102, "-5..-2", 103],
         },
         {
-            summary => 'option: threshold',
+            summary => 'option: min_range_len (1)',
             args => {
                 array => [100, 2, 3, 4, 5, 101],
-                threshold => 5,
+                min_range_len => 5,
             },
             result => [100, 2, 3, 4, 5, 101],
+        },
+        {
+            summary => 'option: min_range_len (2)',
+            args => {
+                array => [100, 2, 3, 4, 101, 'foo'],
+                min_range_len => 3,
+            },
+            result => [100, "2..4", 101, 'foo'],
         },
         {
             summary => 'option: ignore_duplicates',
@@ -82,12 +108,12 @@ $SPEC{'convert_number_sequence_to_range'} = {
             result => ["1..4", 9],
         },
         {
-            summary => 'option: max_width',
+            summary => 'option: max_range_len (1)',
             args => {
                 array => [98, 100..110, 5, 101],
-                max_width => 4,
+                max_range_len => 4,
             },
-            result => [98, "100..103","104..107","108..110", 2, 3, 4, 5, 101],
+            result => [98, "100..103","104..107", 108, 109, 110, 5, 101],
         },
     ],
 };
@@ -95,17 +121,17 @@ sub convert_number_sequence_to_range {
     my %args = @_;
 
     my $array = $args{array};
-    my $threshold = $args{threshold} // 4;
+    my $min_range_len = $args{min_range_len} // 4;
+    my $max_range_len = $args{max_range_len};
     my $separator = $args{separator} // '..';
     my $ignore_duplicates = $args{ignore_duplicates};
-    my $max_width = $args{max_width} // 0;
 
     my @res;
     my @buf; # to hold possible sequence
 
     my $code_empty_buffer = sub {
         return unless @buf;
-        push @res, @buf >= $threshold ? ("$buf[0]$separator$buf[-1]") : @buf;
+        push @res, @buf >= $min_range_len ? ("$buf[0]$separator$buf[-1]") : @buf;
         @buf = ();
     };
 
@@ -124,7 +150,7 @@ sub convert_number_sequence_to_range {
             if ($el != $buf[-1]+1) { # breaks current sequence
                 $code_empty_buffer->();
             }
-            if ( $max_width && @buf >= $max_width ) {
+            if ($max_range_len && @buf >= $max_range_len) {
                 $code_empty_buffer->();
             }
         }
@@ -144,4 +170,5 @@ sub convert_number_sequence_to_range {
 L<Data::Dump> also does something similar when dumping arrays of numbers, e.g.
 if you say C<dd [1,2,3,4];> it will dump the array as "[1..4]".
 
-L<String::Util::Range>
+L<String::Util::Range> also convert sequences of letters to range (e.g.
+"a","b","c","d" -> "a..d").
