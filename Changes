@@ -8,7 +8,7 @@
 
         - [incompatible change] Rename option 'threshold' to 'min_range_len'.
 
-        - Add option 'max_range_len' (thanks, BOOK).
+        - Add option 'max_range_len' (thanks, BOOK). (GH#1)
 
         - [doc] Add more documentation & examples.
 
