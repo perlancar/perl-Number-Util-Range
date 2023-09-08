@@ -36,6 +36,10 @@ $SPEC{'convert_number_sequence_to_range'} = {
         ignore_duplicates => {
             schema => 'true*',
         },
+        max_width => {
+            schema => 'posint*',
+            default => 0,
+        },
     },
     result_naked => 1,
     examples => [
@@ -77,6 +81,14 @@ $SPEC{'convert_number_sequence_to_range'} = {
             },
             result => ["1..4", 9],
         },
+        {
+            summary => 'option: max_width',
+            args => {
+                array => [98, 100..110, 5, 101],
+                max_width => 4,
+            },
+            result => [98, "100..103","104..107","108..110", 2, 3, 4, 5, 101],
+        },
     ],
 };
 sub convert_number_sequence_to_range {
@@ -86,6 +98,7 @@ sub convert_number_sequence_to_range {
     my $threshold = $args{threshold} // 4;
     my $separator = $args{separator} // '..';
     my $ignore_duplicates = $args{ignore_duplicates};
+    my $max_width = $args{max_width} // 0;
 
     my @res;
     my @buf; # to hold possible sequence
@@ -109,6 +122,9 @@ sub convert_number_sequence_to_range {
         }
         if (@buf) {
             if ($el != $buf[-1]+1) { # breaks current sequence
+                $code_empty_buffer->();
+            }
+            if ( $max_width && @buf >= $max_width ) {
                 $code_empty_buffer->();
             }
         }
