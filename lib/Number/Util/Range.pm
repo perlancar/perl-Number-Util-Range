@@ -29,7 +29,7 @@ MARKDOWN
         array => {
             schema => ['array*', of=>'str*'],
             pos => 0,
-            greedy => 1,
+            slurpy => 1,
             cmdline_src => 'stdin_or_args',
         },
         min_range_len => {
