@@ -125,6 +125,8 @@ sub convert_number_sequence_to_range {
         // $args{threshold} # old name, DEPRECATED
         // 4;
     my $max_range_len = $args{max_range_len};
+    die "max_range_len must be >= min_range_len"
+        if defined($max_range_len) && $max_range_len < $min_range_len;
     my $separator = $args{separator} // '..';
     my $ignore_duplicates = $args{ignore_duplicates};
 
